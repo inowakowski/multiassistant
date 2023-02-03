@@ -4,7 +4,7 @@ Simple app to manage multiple Home assistants.
 
 ## Installation
 
-Release builds are available on the [releases page]()
+Release builds are available on the [releases page](https://github.com/inowakowski/multiassistant/releases/tag/v1.0)
 You can also build the app yourself by cloning this repository and running `flutter build apk` or `flutter build ios` in the root directory.
 
 ## Usage
