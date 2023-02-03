@@ -2,7 +2,7 @@ name: multiassistant
 description: App for multi Home Assistant instance.
 
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.2.0+1
 
 environment:
   sdk: ">=2.17.5 <3.0.0"
@@ -15,7 +15,6 @@ dependencies:
   webview_flutter: ^3.0.4
   http: ^0.13.4
   dynamic_color: ^1.4.0
-  material_design_icons_flutter: ^6.0.7096
   flutter_slidable: ^2.0.0
 
 dev_dependencies:
