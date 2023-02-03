@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:multiassistant/helper/helper.dart';
@@ -5,7 +8,7 @@ import 'package:multiassistant/helper/model.dart';
 import 'package:sqflite/sqflite.dart' show Database;
 import 'package:multiassistant/server_detail.dart';
 import 'package:multiassistant/web_page.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:multiassistant/helper/check_url.dart';
 
 class WebViewApp extends StatefulWidget {
   const WebViewApp({super.key});
@@ -25,38 +28,52 @@ class _WebViewAppState extends State<WebViewApp> {
     if (serverList.isEmpty) {
       serverList = [];
       updateListView();
+    } else {
+      updateListView();
     }
 
     helper.getServersMapList();
     helper.getServersList();
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("MultiAssistant"),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                navigateToDetail(Server('', '', ''), 'Add Server');
-              },
-            ),
-          ],
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            navigateToDetail(Server('', '', ''), 'Add Server');
+          },
+          child: const Icon(
+            Icons.add,
+          ),
         ),
-        body: serverList.isEmpty
-            ? const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    "No Data",
-                    style: TextStyle(
-                      fontSize: 20.0,
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar.medium(
+            title: const Text('MultiAssistant',
+                style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold)),
+            // backgroundColor: Colors.blue,
+          ),
+          SliverFillRemaining(
+            child: serverList.isEmpty
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        "No servers found. Please add a server.",
+                        style: TextStyle(
+                          fontSize: 20.0,
+                        ),
+                      ),
                     ),
+                  )
+                : Container(
+                    child: getServersList(),
                   ),
-                ),
-              )
-            : Container(
-                child: getServersList(),
-              ));
+          ),
+        ],
+      ),
+    );
   }
 
   void updateListView() {
@@ -67,7 +84,6 @@ class _WebViewAppState extends State<WebViewApp> {
         setState(() {
           this.serverList = serverList;
           count = serverList.length;
-          debugPrint('Count: $count');
         });
       });
     });
@@ -80,66 +96,73 @@ class _WebViewAppState extends State<WebViewApp> {
         return Slidable(
           startActionPane: ActionPane(
             extentRatio: 0.25,
-            motion: const BehindMotion(),
-            // dismissible: DismissiblePane(
-            //   onDismissed:
-            // ),
+            motion: const DrawerMotion(),
             children: [
-              SlidableAction(
-                icon: Icons.edit,
-                label: 'Edit',
-                backgroundColor: Colors.blue,
+              CustomSlidableAction(
+                backgroundColor: Theme.of(context).colorScheme.background,
                 onPressed: (context) {
                   navigateToDetail(serverList[index], 'Edit Server');
                 },
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SizedBox(
+                    height: constraints.maxHeight - 8,
+                    child: SlidableAction(
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(12.0)),
+                      icon: Icons.edit,
+                      label: 'Edit',
+                      backgroundColor:
+                          Theme.of(context).colorScheme.surfaceVariant,
+                      onPressed: (context) {
+                        navigateToDetail(serverList[index], 'Edit Server');
+                      },
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
           endActionPane: ActionPane(
             extentRatio: 0.25,
-            motion: const BehindMotion(),
+            motion: const DrawerMotion(),
             children: [
-              SlidableAction(
-                icon: Icons.delete,
-                label: 'Delete',
-                backgroundColor: Colors.red,
+              CustomSlidableAction(
+                backgroundColor: Theme.of(context).colorScheme.background,
                 onPressed: (context) {
-                  _delete(context, serverList[index]);
+                  navigateToDetail(serverList[index], 'Edit Server');
                 },
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SizedBox(
+                    height: constraints.maxHeight - 8,
+                    child: SlidableAction(
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(12.0)),
+                      icon: Icons.delete,
+                      label: 'Delete',
+                      backgroundColor: Theme.of(context).colorScheme.onError,
+                      onPressed: (context) {
+                        navigateToDetail(serverList[index], 'Edit Server');
+                      },
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
-          child: ListTile(
-            // leading: const Icon(MdiIcons.homeAssistant, size: 30.0),
-            title: Text(serverList[index].name,
-                style: const TextStyle(fontSize: 20.0)),
-            subtitle: Text(
-              serverList[index].localUrl,
+          child: Card(
+            child: ListTile(
+              title: Text(serverList[index].name,
+                  style: const TextStyle(fontSize: 20.0)),
+              subtitle: Text(
+                '',
+              ),
+              onTap: () {
+                _checkUrl(index);
+              },
+              onLongPress: () {
+                navigateToDetail(serverList[index], 'Edit Server');
+              },
             ),
-            trailing: IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => WebViewPage(
-                        serverList[index].localUrl,
-                        serverList[index].externalUrl,
-                      ),
-                    ),
-                  );
-                },
-                icon: Icon(Icons.arrow_forward_ios)),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => WebViewPage(
-                    serverList[index].localUrl,
-                    serverList[index].externalUrl,
-                  ),
-                ),
-              );
-            },
           ),
         );
       },
@@ -182,6 +205,36 @@ class _WebViewAppState extends State<WebViewApp> {
 
     if (result == true) {
       updateListView();
+    }
+  }
+
+  Future<void> navigateToServer(String url) async {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return WebViewPage(url);
+    }));
+  }
+
+  Future<void> snackBar() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Server is not reachable"),
+      ),
+    );
+  }
+
+  _checkUrl(index) async {
+    try {
+      var response = await http.get(Uri.parse(serverList[index].localUrl));
+      if (response.statusCode == 200) {
+        navigateToServer(serverList[index].localUrl);
+      }
+    } on SocketException catch (_) {
+      var response = await http.get(Uri.parse(serverList[index].externalUrl));
+      if (response.statusCode == 200) {
+        navigateToServer(serverList[index].externalUrl);
+      }
+    } on Exception catch (_) {
+      snackBar();
     }
   }
 }
