@@ -5,13 +5,13 @@ Future<String> checkServers(String localUrl, String externalUrl) async {
     var response = await http.get(Uri.parse(localUrl));
 
     if (response.statusCode == 200) {
-      return "Connected by local url";
+      return "Local connection";
     }
   } catch (e) {
     var response = await http.get(Uri.parse(externalUrl));
 
     if (response.statusCode == 200) {
-      return "Connected by external url";
+      return "External connection";
     } else {
       return "Not connected";
     }
