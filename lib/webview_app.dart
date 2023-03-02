@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -9,6 +10,7 @@ import 'package:sqflite/sqflite.dart' show Database;
 import 'package:multiassistant/server_detail.dart';
 import 'package:multiassistant/web_page.dart';
 import 'package:multiassistant/helper/check_url.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class WebViewApp extends StatefulWidget {
   const WebViewApp({super.key});
@@ -22,6 +24,10 @@ class _WebViewAppState extends State<WebViewApp> {
 
   List<Server> serverList = [];
   int count = 0;
+
+  List<String> connectionStatus = [];
+
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -49,25 +55,29 @@ class _WebViewAppState extends State<WebViewApp> {
       ),
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.medium(
-            title: const Text('MultiAssistant',
-                style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold)),
-            // backgroundColor: Colors.blue,
+          SliverAppBar.large(
+            title: Text(
+              'MultiAssistant',
+              style: Theme.of(context).textTheme.displaySmall,
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size(double.infinity, 4),
+              child: isLoading ? const LinearProgressIndicator() : Container(),
+            ),
           ),
           SliverFillRemaining(
             child: serverList.isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
-                      padding: EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Text(
                         "No servers found. Please add a server.",
-                        style: TextStyle(
-                          fontSize: 20.0,
-                        ),
+                        style: Theme.of(context).textTheme.displayMedium,
                       ),
                     ),
                   )
                 : Container(
+                    // margin: EdgeInsets.only(top: ),
                     child: getServersList(),
                   ),
           ),
@@ -91,8 +101,11 @@ class _WebViewAppState extends State<WebViewApp> {
 
   ListView getServersList() {
     return ListView.builder(
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
       itemCount: count,
       itemBuilder: (BuildContext context, int index) {
+        // _checkConnection(index);
         return Slidable(
           startActionPane: ActionPane(
             extentRatio: 0.25,
@@ -141,7 +154,7 @@ class _WebViewAppState extends State<WebViewApp> {
                       label: 'Delete',
                       backgroundColor: Theme.of(context).colorScheme.onError,
                       onPressed: (context) {
-                        navigateToDetail(serverList[index], 'Edit Server');
+                        _delete(context, index);
                       },
                     ),
                   ),
@@ -152,10 +165,10 @@ class _WebViewAppState extends State<WebViewApp> {
           child: Card(
             child: ListTile(
               title: Text(serverList[index].name,
-                  style: const TextStyle(fontSize: 20.0)),
-              subtitle: Text(
-                '',
-              ),
+                  style: Theme.of(context).textTheme.titleMedium),
+              // subtitle: _checkConnection(index) == ''
+              //     ? const Text("puste")
+              //     : Text(connectionStatus[index]),
               onTap: () {
                 _checkUrl(index);
               },
@@ -169,7 +182,7 @@ class _WebViewAppState extends State<WebViewApp> {
     );
   }
 
-  void _delete(BuildContext context, Server serverList) {
+  void _delete(BuildContext context, index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -181,7 +194,8 @@ class _WebViewAppState extends State<WebViewApp> {
               child: const Text("Yes"),
               onPressed: () {
                 Navigator.of(context).pop();
-                helper.deleteServer(serverList.id!);
+                helper.deleteServer(serverList[index].id!);
+                connectionStatus.removeAt(index);
                 updateListView();
               },
             ),
@@ -204,6 +218,7 @@ class _WebViewAppState extends State<WebViewApp> {
     }));
 
     if (result == true) {
+      connectionStatus.add("");
       updateListView();
     }
   }
@@ -223,18 +238,63 @@ class _WebViewAppState extends State<WebViewApp> {
   }
 
   _checkUrl(index) async {
+    setState(() {
+      isLoading = true;
+    });
     try {
       var response = await http.get(Uri.parse(serverList[index].localUrl));
       if (response.statusCode == 200) {
+        setState(() {
+          isLoading = false;
+        });
         navigateToServer(serverList[index].localUrl);
       }
     } on SocketException catch (_) {
       var response = await http.get(Uri.parse(serverList[index].externalUrl));
       if (response.statusCode == 200) {
+        setState(() {
+          isLoading = false;
+        });
         navigateToServer(serverList[index].externalUrl);
       }
     } on Exception catch (_) {
+      setState(() {
+        isLoading = false;
+      });
       snackBar();
     }
+  }
+
+  Future<String> _checkConnection(index) async {
+    try {
+      var response = await http.get(Uri.parse(serverList[index].localUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          connectionStatus[index] = "Local connection";
+        });
+        // connectionStatus.insert(index, "Local connection");
+        return "Local connection";
+      }
+    } on SocketException catch (_) {
+      var response = await http.get(Uri.parse(serverList[index].externalUrl));
+      if (response.statusCode == 200) {
+        // setState(() {
+        //   connectionState = "External connection";
+        // });
+        connectionStatus.insert(index, 'External connection');
+        return 'External connection';
+        // return const Text('External connection');
+      }
+    } on Exception catch (_) {
+      // setState(() {
+      //   connectionState = "No connection";
+      // });
+      connectionStatus.insert(index, 'No connetion');
+      return 'No connection';
+      // return const Text('No connection');
+    }
+
+    return '';
+    // return const Text('');
   }
 }
