@@ -12,7 +12,7 @@ class ServerDetail extends StatefulWidget {
 
   @override
   State<ServerDetail> createState() {
-    return _ServerDetailState(this.server, this.title);
+    return _ServerDetailState(server, title);
   }
 }
 
@@ -41,7 +41,7 @@ class _ServerDetailState extends State<ServerDetail> {
           body: CustomScrollView(
             slivers: [
               SliverAppBar.medium(
-                title: Text(title, style: TextStyle(fontSize: 30.0)),
+                title: Text(title, style: const TextStyle(fontSize: 30.0)),
               ),
               SliverFillRemaining(
                 child: Column(

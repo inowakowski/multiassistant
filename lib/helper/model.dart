@@ -32,7 +32,7 @@ class Server {
   }
 
   Map<String, dynamic> toMap() {
-    var map = Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map['id'] = _id;
     map['name'] = _name;
     map['localUrl'] = _localUrl;

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -9,8 +8,6 @@ import 'package:multiassistant/helper/model.dart';
 import 'package:sqflite/sqflite.dart' show Database;
 import 'package:multiassistant/server_detail.dart';
 import 'package:multiassistant/web_page.dart';
-import 'package:multiassistant/helper/check_url.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class WebViewApp extends StatefulWidget {
   const WebViewApp({super.key});
@@ -72,7 +69,7 @@ class _WebViewAppState extends State<WebViewApp> {
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
                         "No servers found. Please add a server.",
-                        style: Theme.of(context).textTheme.displayMedium,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
                   )
@@ -111,27 +108,16 @@ class _WebViewAppState extends State<WebViewApp> {
             extentRatio: 0.25,
             motion: const DrawerMotion(),
             children: [
-              CustomSlidableAction(
-                backgroundColor: Theme.of(context).colorScheme.background,
+              SlidableAction(
+                // borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+                // padding: const EdgeInsets.only(top: -8.0, bottom: -8.0),
+                icon: Icons.edit,
+                autoClose: true,
+                label: 'Edit',
+                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
                 onPressed: (context) {
                   navigateToDetail(serverList[index], 'Edit Server');
                 },
-                child: LayoutBuilder(
-                  builder: (context, constraints) => SizedBox(
-                    height: constraints.maxHeight - 8,
-                    child: SlidableAction(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(12.0)),
-                      icon: Icons.edit,
-                      label: 'Edit',
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceVariant,
-                      onPressed: (context) {
-                        navigateToDetail(serverList[index], 'Edit Server');
-                      },
-                    ),
-                  ),
-                ),
               ),
             ],
           ),
@@ -139,43 +125,32 @@ class _WebViewAppState extends State<WebViewApp> {
             extentRatio: 0.25,
             motion: const DrawerMotion(),
             children: [
-              CustomSlidableAction(
-                backgroundColor: Theme.of(context).colorScheme.background,
+              SlidableAction(
+                icon: Icons.delete,
+                label: 'Delete',
+                backgroundColor: Theme.of(context).colorScheme.error,
                 onPressed: (context) {
-                  navigateToDetail(serverList[index], 'Edit Server');
+                  _delete(context, index);
                 },
-                child: LayoutBuilder(
-                  builder: (context, constraints) => SizedBox(
-                    height: constraints.maxHeight - 8,
-                    child: SlidableAction(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(12.0)),
-                      icon: Icons.delete,
-                      label: 'Delete',
-                      backgroundColor: Theme.of(context).colorScheme.onError,
-                      onPressed: (context) {
-                        _delete(context, index);
-                      },
-                    ),
-                  ),
-                ),
               ),
             ],
           ),
-          child: Card(
-            child: ListTile(
-              title: Text(serverList[index].name,
-                  style: Theme.of(context).textTheme.titleMedium),
-              // subtitle: _checkConnection(index) == ''
-              //     ? const Text("puste")
-              //     : Text(connectionStatus[index]),
-              onTap: () {
-                _checkUrl(index);
-              },
-              onLongPress: () {
-                navigateToDetail(serverList[index], 'Edit Server');
-              },
+          child: ListTile(
+            // contentPadding: EdgeInsets.all(8.0),
+            title: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Text(serverList[index].name,
+                  style: Theme.of(context).textTheme.bodyLarge),
             ),
+            // subtitle: _checkConnection(index) == ''
+            //     ? const Text("puste")
+            //     : Text(connectionStatus[index]),
+            onTap: () {
+              _checkUrl(index);
+            },
+            onLongPress: () {
+              navigateToDetail(serverList[index], 'Edit Server');
+            },
           ),
         );
       },
