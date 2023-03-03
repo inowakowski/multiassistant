@@ -41,7 +41,10 @@ class _ServerDetailState extends State<ServerDetail> {
           body: CustomScrollView(
             slivers: [
               SliverAppBar.medium(
-                title: Text(title, style: const TextStyle(fontSize: 30.0)),
+                title: Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineLarge,
+                ),
               ),
               SliverFillRemaining(
                 child: Column(
@@ -66,9 +69,6 @@ class _ServerDetailState extends State<ServerDetail> {
                                   ),
                                 ),
                                 labelText: 'Name',
-                                labelStyle: TextStyle(
-                                  fontSize: 20.0,
-                                ),
                               ),
                             ),
                           ),
@@ -89,9 +89,6 @@ class _ServerDetailState extends State<ServerDetail> {
                                 ),
                                 labelText: 'Local URL',
                                 hintText: 'http://homeassistant.local:8123',
-                                labelStyle: TextStyle(
-                                  fontSize: 20.0,
-                                ),
                               ),
                             ),
                           ),
@@ -112,9 +109,6 @@ class _ServerDetailState extends State<ServerDetail> {
                                 ),
                                 labelText: 'External URL',
                                 hintText: 'https://homeassistant.com',
-                                labelStyle: TextStyle(
-                                  fontSize: 20.0,
-                                ),
                               ),
                             ),
                           ),
@@ -132,8 +126,10 @@ class _ServerDetailState extends State<ServerDetail> {
                                     right: 20,
                                     top: 10.0,
                                     bottom: 10),
-                                child: Text('Save',
-                                    style: TextStyle(fontSize: 20.0)),
+                                child: Text(
+                                  'Save',
+                                  // style: Theme.of(context).textTheme.labelLarge,
+                                ),
                               ),
                             ),
                           ),
